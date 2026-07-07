@@ -302,7 +302,7 @@ public final class Decoder {
 
     int numDataCodewords = ddata.getNbDatablocks();
     int numCodewords = rawbits.length / codewordSize;
-    if (numCodewords < numDataCodewords) {
+    if (numDataCodewords < 1 || numCodewords < numDataCodewords) {
       throw FormatException.getFormatInstance();
     }
     int offset = rawbits.length % codewordSize;

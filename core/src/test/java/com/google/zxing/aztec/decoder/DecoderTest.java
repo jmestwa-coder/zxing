@@ -71,6 +71,25 @@ public final class DecoderTest extends Assert {
   }
 
   @Test
+  public void testDecodeNoDataCodewords() {
+    // a detector result claiming zero (or negative) data codewords must fail as FormatException,
+    // not IllegalArgumentException / NegativeArraySizeException out of the Reed-Solomon step
+    BitMatrix matrix = new BitMatrix(151, 151);
+    for (int nbDatablocks : new int[] { 0, -1 }) {
+      for (int nbLayers : new int[] { 0, 1, 2 }) {
+        for (boolean compact : new boolean[] { true, false }) {
+          try {
+            new Decoder().decode(new AztecDetectorResult(matrix, NO_POINTS, compact, nbDatablocks, nbLayers));
+            fail("nbDatablocks=" + nbDatablocks + " nbLayers=" + nbLayers + " should be rejected");
+          } catch (FormatException expected) {
+            // expected
+          }
+        }
+      }
+    }
+  }
+
+  @Test
   public void testAztecResult() throws FormatException {
     BitMatrix matrix = BitMatrix.parse(
         "X X X X X     X X X       X X X     X X X     \n" +
