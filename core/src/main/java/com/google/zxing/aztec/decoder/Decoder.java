@@ -357,10 +357,16 @@ public final class Decoder {
    *
    * @return the array of bits
    */
-  private boolean[] extractBits(BitMatrix matrix) {
+  private boolean[] extractBits(BitMatrix matrix) throws FormatException {
     boolean compact = ddata.isCompact();
     int layers = ddata.getNbLayers();
     int baseMatrixSize = (compact ? 11 : 14) + layers * 4; // not including alignment lines
+    int matrixSize = compact ? baseMatrixSize : baseMatrixSize + 1 + 2 * ((baseMatrixSize / 2 - 1) / 15);
+    if (matrix.getHeight() != matrixSize || matrix.getWidth() != matrixSize) {
+      // The matrix dimensions are fixed by the layer count; a mismatched detector result would
+      // otherwise index outside the matrix below.
+      throw FormatException.getFormatInstance();
+    }
     int[] alignmentMap = new int[baseMatrixSize];
     boolean[] rawbits = new boolean[totalBitsInLayer(layers, compact)];
 
@@ -369,7 +375,6 @@ public final class Decoder {
         alignmentMap[i] = i;
       }
     } else {
-      int matrixSize = baseMatrixSize + 1 + 2 * ((baseMatrixSize / 2 - 1) / 15);
       int origCenter = baseMatrixSize / 2;
       int center = matrixSize / 2;
       for (int i = 0; i < origCenter; i++) {

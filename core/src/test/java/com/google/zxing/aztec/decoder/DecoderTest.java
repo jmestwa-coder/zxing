@@ -90,6 +90,23 @@ public final class DecoderTest extends Assert {
   }
 
   @Test
+  public void testDecodeLayerCountMatrixMismatch() {
+    // a detector result whose bit matrix is smaller than its layer count implies must fail as
+    // FormatException, not ArrayIndexOutOfBoundsException out of the bit-extraction step
+    BitMatrix matrix = new BitMatrix(15, 15); // the size of a compact one-layer symbol only
+    for (boolean compact : new boolean[] { true, false }) {
+      for (int nbLayers : new int[] { 2, 4, 10, 32 }) {
+        try {
+          new Decoder().decode(new AztecDetectorResult(matrix, NO_POINTS, compact, 10, nbLayers));
+          fail("compact=" + compact + " nbLayers=" + nbLayers + " should be rejected");
+        } catch (FormatException expected) {
+          // expected
+        }
+      }
+    }
+  }
+
+  @Test
   public void testAztecResult() throws FormatException {
     BitMatrix matrix = BitMatrix.parse(
         "X X X X X     X X X       X X X     X X X     \n" +
